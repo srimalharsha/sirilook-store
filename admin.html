@@ -16,10 +16,11 @@
 <section class="card" id="formCard"><h2 id="formTitle">＋ අලුත් ඇඳුමක් එක් කරන්න</h2>
 <form id="productForm" novalidate><div class="grid">
 <div class="field"><label for="name">ඇඳුමේ නම *</label><input id="name" required maxlength="100" placeholder="උදා: Floral Summer Dress"></div>
+<div class="field"><label for="styleNumber">Style Number / Style No.</label><input id="styleNumber" maxlength="50" placeholder="උදා: SL-001"></div>
 <div class="field"><label for="price">මිල (රු.) *</label><input id="price" type="number" required min="0" step="0.01" placeholder="4500"></div>
 <div class="field"><label for="category">කාණ්ඩය *</label><select id="category" required><option value="">කාණ්ඩය තෝරන්න</option><option>කාන්තා ඇඳුම්</option><option>පිරිමි ඇඳුම්</option><option>ළමා ඇඳුම්</option><option>සාම්ප්‍රදායික ඇඳුම්</option><option>අනෙකුත්</option></select></div>
 <div class="field"><label for="sizes">ප්‍රමාණ (Sizes)</label><input id="sizes" maxlength="100" placeholder="S, M, L, XL"></div>
-<div class="field"><label for="colors">වර්ණ (Colors)</label><input id="colors" maxlength="150" placeholder="කළු, සුදු, රෝස"></div>
+<div class="field"><label for="colors">වර්ණ සහ Colour Code</label><input id="colors" maxlength="300" placeholder="කළු:#222222, සුදු:#ffffff, රෝස:#f4a7bb"><p class="small">එක් එක් වර්ණය මෙලෙස දාන්න: නම:#HEXCODE. උදා: කළු:#222222, රෝස:#f4a7bb</p></div>
 <div class="field"><label for="imageUrl">ඡායාරූප URL</label><input id="imageUrl" type="url" placeholder="https://..."></div>
 <div class="field full"><label for="description">විස්තර</label><textarea id="description" maxlength="1000" placeholder="ඇඳුමේ විස්තර, රෙදි වර්ගය ආදිය"></textarea></div>
 <div class="field"><label for="availability">තත්ත්වය</label><select id="availability"><option value="available">ලබාගත හැකිය</option><option value="soldout">අවසන් වී ඇත</option></select></div>
@@ -48,6 +49,7 @@ function renderProducts(){
   if(p.imageUrl){const img=document.createElement("img");img.src=p.imageUrl;img.alt=p.name||"SIRILOOK ඇඳුම";img.loading="lazy";img.onerror=function(){this.style.display="none"};card.appendChild(img)}
   const info=document.createElement("div");info.className="pinfo";info.appendChild(textElement("h3",p.name));
   info.appendChild(textElement("div","රු. "+Number(p.price||0).toLocaleString("en-LK",{maximumFractionDigits:2}),"price"));
+  if(p.styleNumber)info.appendChild(textElement("p","Style No: "+p.styleNumber));
   info.appendChild(textElement("p",p.category||""));
   if(p.sizes)info.appendChild(textElement("p","ප්‍රමාණ: "+p.sizes));
   if(p.colors)info.appendChild(textElement("p","වර්ණ: "+p.colors));
@@ -59,7 +61,7 @@ function renderProducts(){
   actions.append(edit,del);info.appendChild(actions);card.appendChild(info);productList.appendChild(card);
  });
 }
-function startEdit(id){const p=products.find(function(item){return item.id===id});if(!p)return;editingId=id;["name","price","category","sizes","colors","imageUrl","description","availability"].forEach(function(k){document.getElementById(k).value=p[k]??(k==="availability"?"available":"")});document.getElementById("formTitle").textContent="භාණ්ඩය වෙනස් කරන්න";document.getElementById("saveBtn").textContent="වෙනස්කම් සුරකින්න";document.getElementById("cancelEditBtn").classList.remove("hidden");document.getElementById("formCard").scrollIntoView({behavior:"smooth"});clearMessage(appMessage)}
+function startEdit(id){const p=products.find(function(item){return item.id===id});if(!p)return;editingId=id;["name","styleNumber","price","category","sizes","colors","imageUrl","description","availability"].forEach(function(k){document.getElementById(k).value=p[k]??(k==="availability"?"available":"")});document.getElementById("formTitle").textContent="භාණ්ඩය වෙනස් කරන්න";document.getElementById("saveBtn").textContent="වෙනස්කම් සුරකින්න";document.getElementById("cancelEditBtn").classList.remove("hidden");document.getElementById("formCard").scrollIntoView({behavior:"smooth"});clearMessage(appMessage)}
 async function removeProduct(id,name){if(!confirm("“"+name+"” මකා දමන්නද?"))return;try{await deleteDoc(doc(db,"products",id));message(appMessage,"භාණ්ඩය මකා දැමුවා.","success")}catch(e){message(appMessage,"මකා දැමීමට නොහැකි වුණා. Firestore Rules පරීක්ෂා කරන්න. ("+e.code+")","error")}}
 function listenProducts(){if(unsubscribeProducts)unsubscribeProducts();unsubscribeProducts=onSnapshot(collection(db,"products"),function(snap){products=snap.docs.map(function(d){return Object.assign({id:d.id},d.data())});products.sort(function(a,b){return (a.name||"").localeCompare(b.name||"")});renderProducts()},function(e){message(appMessage,"භාණ්ඩ කියවීමට නොහැකි වුණා. Firestore Rules හි products කියවීමට අවසර තිබේද බලන්න. ("+e.code+")","error");productCount.textContent="දත්ත ලබාගත නොහැකිය"})}
 onAuthStateChanged(auth,function(user){
@@ -79,7 +81,7 @@ productForm.addEventListener("submit",async function(e){
  if(imageField.value.trim()){try{const u=new URL(imageField.value.trim());if(u.protocol!=="https:")throw new Error("https required")}catch(_){showSaveError("ඡායාරූප URL එක නිවැරදි HTTPS link එකක් නොවේ. දැනට එය හිස්ව තබා Save කර බලන්න.");imageField.focus();return}}
  const user=auth.currentUser;if(!user||user.email.toLowerCase()!==ADMIN_EMAIL){message(appMessage,"මෙම ක්‍රියාවට අවසර නැහැ. නැවත Login වෙන්න.","error");return}
  const price=Number(document.getElementById("price").value);if(!Number.isFinite(price)||price<0){message(appMessage,"නිවැරදි මිලක් ඇතුළත් කරන්න.","error");return}
- const data={name:document.getElementById("name").value.trim(),price:price,category:document.getElementById("category").value,sizes:document.getElementById("sizes").value.trim(),colors:document.getElementById("colors").value.trim(),imageUrl:document.getElementById("imageUrl").value.trim(),description:document.getElementById("description").value.trim(),availability:document.getElementById("availability").value,updatedAt:serverTimestamp()};
+ const data={name:document.getElementById("name").value.trim(),styleNumber:document.getElementById("styleNumber").value.trim(),price:price,category:document.getElementById("category").value,sizes:document.getElementById("sizes").value.trim(),colors:document.getElementById("colors").value.trim(),imageUrl:document.getElementById("imageUrl").value.trim(),description:document.getElementById("description").value.trim(),availability:document.getElementById("availability").value,updatedAt:serverTimestamp()};
  if(!data.name||!data.category){message(appMessage,"ඇඳුමේ නම සහ කාණ්ඩය ඇතුළත් කරන්න.","error");return}
  const btn=document.getElementById("saveBtn");btn.disabled=true;
  try{if(editingId){await updateDoc(doc(db,"products",editingId),data);message(appMessage,"භාණ්ඩයේ විස්තර යාවත්කාලීන කළා.","success")}else{data.createdAt=serverTimestamp();await addDoc(collection(db,"products"),data);message(appMessage,"අලුත් භාණ්ඩය සාර්ථකව එක් කළා.","success")}resetForm()}catch(e){console.error("SIRILOOK product save failed:",e);showSaveError("සුරැකීමට නොහැකි වුණා. හේතුව: "+(e.code||"unknown")+" — "+(e.message||"විස්තර නැහැ")+". Firebase Firestore Rules සහ Admin Login පරීක්ෂා කරන්න.")}finally{btn.disabled=false}
