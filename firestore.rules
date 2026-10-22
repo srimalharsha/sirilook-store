@@ -32,6 +32,29 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    match /orders/{orderId} {
+      // Customers can only read one order by its unguessable tracking code.
+      // They cannot list all orders; only the admin can list orders.
+      allow get: if true;
+      allow list: if isAdmin();
+      allow create: if
+        request.resource.data.keys().hasOnly([
+          'code', 'items', 'total', 'status', 'createdAt'
+        ])
+        && request.resource.data.keys().hasAll([
+          'code', 'items', 'total', 'status', 'createdAt'
+        ])
+        && request.resource.data.code == orderId
+        && request.resource.data.items is list
+        && request.resource.data.items.size() > 0
+        && request.resource.data.items.size() <= 30
+        && request.resource.data.total is number
+        && request.resource.data.total > 0
+        && request.resource.data.status == 'received'
+        && request.resource.data.createdAt == request.time;
+      allow update, delete: if isAdmin();
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
