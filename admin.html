@@ -14,7 +14,7 @@
 <section id="appPanel" class="hidden">
 <div class="card"><div class="toolbar"><div><h1>ඇඳුම් කළමනාකරණය</h1><p class="muted">මෙතැන එක් කරන භාණ්ඩ ප්‍රධාන SIRILOOK වෙබ් අඩවියේ පෙන්වයි.</p></div><div class="small" id="signedInAs"></div></div><div id="appMessage" class="message" role="status"></div></div>
 <section class="card" id="formCard"><h2 id="formTitle">＋ අලුත් ඇඳුමක් එක් කරන්න</h2>
-<form id="productForm"><div class="grid">
+<form id="productForm" novalidate><div class="grid">
 <div class="field"><label for="name">ඇඳුමේ නම *</label><input id="name" required maxlength="100" placeholder="උදා: Floral Summer Dress"></div>
 <div class="field"><label for="price">මිල (රු.) *</label><input id="price" type="number" required min="0" step="0.01" placeholder="4500"></div>
 <div class="field"><label for="category">කාණ්ඩය *</label><select id="category" required><option value="">කාණ්ඩය තෝරන්න</option><option>කාන්තා ඇඳුම්</option><option>පිරිමි ඇඳුම්</option><option>ළමා ඇඳුම්</option><option>සාම්ප්‍රදායික ඇඳුම්</option><option>අනෙකුත්</option></select></div>
@@ -71,11 +71,17 @@ logoutBtn.addEventListener("click",async function(){if(unsubscribeProducts){unsu
 document.getElementById("cancelEditBtn").addEventListener("click",resetForm);
 productForm.addEventListener("submit",async function(e){
  e.preventDefault();clearMessage(appMessage);
+ const showSaveError=function(t){message(appMessage,t,"error");appMessage.scrollIntoView({behavior:"smooth",block:"center"})};
+ const nameField=document.getElementById("name"),priceField=document.getElementById("price"),categoryField=document.getElementById("category"),imageField=document.getElementById("imageUrl");
+ if(!nameField.value.trim()){showSaveError("කරුණාකර ඇඳුමේ නම ඇතුළත් කරන්න.");nameField.focus();return}
+ if(priceField.value.trim()===""||!Number.isFinite(Number(priceField.value))||Number(priceField.value)<0){showSaveError("කරුණාකර නිවැරදි මිලක් ඇතුළත් කරන්න.");priceField.focus();return}
+ if(!categoryField.value){showSaveError("කරුණාකර කාණ්ඩයක් තෝරන්න.");categoryField.focus();return}
+ if(imageField.value.trim()){try{const u=new URL(imageField.value.trim());if(u.protocol!=="https:")throw new Error("https required")}catch(_){showSaveError("ඡායාරූප URL එක නිවැරදි HTTPS link එකක් නොවේ. දැනට එය හිස්ව තබා Save කර බලන්න.");imageField.focus();return}}
  const user=auth.currentUser;if(!user||user.email.toLowerCase()!==ADMIN_EMAIL){message(appMessage,"මෙම ක්‍රියාවට අවසර නැහැ. නැවත Login වෙන්න.","error");return}
  const price=Number(document.getElementById("price").value);if(!Number.isFinite(price)||price<0){message(appMessage,"නිවැරදි මිලක් ඇතුළත් කරන්න.","error");return}
  const data={name:document.getElementById("name").value.trim(),price:price,category:document.getElementById("category").value,sizes:document.getElementById("sizes").value.trim(),colors:document.getElementById("colors").value.trim(),imageUrl:document.getElementById("imageUrl").value.trim(),description:document.getElementById("description").value.trim(),availability:document.getElementById("availability").value,updatedAt:serverTimestamp()};
  if(!data.name||!data.category){message(appMessage,"ඇඳුමේ නම සහ කාණ්ඩය ඇතුළත් කරන්න.","error");return}
  const btn=document.getElementById("saveBtn");btn.disabled=true;
- try{if(editingId){await updateDoc(doc(db,"products",editingId),data);message(appMessage,"භාණ්ඩයේ විස්තර යාවත්කාලීන කළා.","success")}else{data.createdAt=serverTimestamp();await addDoc(collection(db,"products"),data);message(appMessage,"අලුත් භාණ්ඩය සාර්ථකව එක් කළා.","success")}resetForm()}catch(e){message(appMessage,"සුරැකීමට නොහැකි වුණා. Firestore Rules Publish කර තිබේද බලන්න. ("+e.code+")","error")}finally{btn.disabled=false}
+ try{if(editingId){await updateDoc(doc(db,"products",editingId),data);message(appMessage,"භාණ්ඩයේ විස්තර යාවත්කාලීන කළා.","success")}else{data.createdAt=serverTimestamp();await addDoc(collection(db,"products"),data);message(appMessage,"අලුත් භාණ්ඩය සාර්ථකව එක් කළා.","success")}resetForm()}catch(e){console.error("SIRILOOK product save failed:",e);showSaveError("සුරැකීමට නොහැකි වුණා. හේතුව: "+(e.code||"unknown")+" — "+(e.message||"විස්තර නැහැ")+". Firebase Firestore Rules සහ Admin Login පරීක්ෂා කරන්න.")}finally{btn.disabled=false}
 });
 </script></body></html>
