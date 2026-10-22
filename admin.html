@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="si">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="SIRILOOK Admin Login">
+<title>SIRILOOK | Admin Login</title>
+<style>
+:root{--wine:#7b284f;--pink:#f8eaf0;--ink:#261b21;--muted:#766a70;--cream:#fffaf8}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:20px;background:linear-gradient(135deg,#fffaf8,#f8eaf0);font-family:Arial,"Noto Sans Sinhala",sans-serif;color:var(--ink)}
+.card{width:min(100%,430px);background:#fff;border:1px solid #f0dfe7;border-radius:18px;padding:28px;box-shadow:0 14px 45px #7b284f18}
+.logo{text-align:center;color:var(--wine);font-size:29px;font-weight:900;letter-spacing:3px}.subtitle{text-align:center;color:var(--muted);line-height:1.7;margin:8px 0 24px}
+label{display:block;font-size:14px;font-weight:bold;margin:15px 0 7px}input{width:100%;padding:13px;border:1px solid #dfcbd4;border-radius:8px;font-size:16px;background:#fff}input:focus{outline:2px solid #d6a6bc;border-color:var(--wine)}
+button{width:100%;padding:14px;border:0;border-radius:8px;background:var(--wine);color:#fff;font-size:16px;font-weight:bold;margin-top:20px;cursor:pointer}button:disabled{opacity:.65;cursor:wait}.message{margin-top:15px;padding:12px;border-radius:8px;line-height:1.6;font-size:14px;display:none}.error{background:#fff0f0;color:#9c2020}.success{background:#edf9ef;color:#176b2b}.panel{display:none}.hint{font-size:12px;color:var(--muted);text-align:center;line-height:1.7;margin-top:18px}.home{display:block;text-align:center;margin-top:18px;color:var(--wine);font-size:14px}
+</style>
+</head>
+<body>
+<main class="card">
+  <div class="logo">SIRILOOK</div>
+  <p class="subtitle">පරිපාලන පුවරුවට පිවිසෙන්න<br>Admin Login</p>
+  <form id="loginForm">
+    <label for="email">Admin Email</label>
+    <input id="email" type="email" autocomplete="username" required placeholder="ඔබගේ email ලිපිනය">
+    <label for="password">Password</label>
+    <input id="password" type="password" autocomplete="current-password" required placeholder="ඔබගේ මුරපදය">
+    <button id="loginBtn" type="submit">Login වෙන්න</button>
+  </form>
+  <div id="message" class="message" role="status"></div>
+  <section id="panel" class="panel">
+    <h2>පිවිසීම සාර්ථකයි ✓</h2>
+    <p>ඔබ SIRILOOK Admin ගිණුමෙන් ඇතුළු වී ඇත.</p>
+    <p>ඊළඟ පියවරේදී ඇඳුම් එකතු කිරීම, මිල වෙනස් කිරීම සහ ඡායාරූප කළමනාකරණය සම්බන්ධ කරමු.</p>
+    <button id="logoutBtn" type="button">Logout</button>
+  </section>
+  <p class="hint">මෙය Admin සඳහා පමණි. ගිණුමක් සෑදීමේ විකල්පයක් මෙහි නැත.</p>
+  <a class="home" href="./index.html">← SIRILOOK වෙබ් අඩවියට ආපසු</a>
+</main>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDhlituAgFNbUhnkmivVgcMeXUPEODNZHQ",
+  authDomain: "sirilook-4683c.firebaseapp.com",
+  projectId: "sirilook-4683c",
+  storageBucket: "sirilook-4683c.firebasestorage.app",
+  messagingSenderId: "325375844401",
+  appId: "1:325375844401:web:ee7142002af033781c7510"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const form = document.getElementById("loginForm");
+const loginBtn = document.getElementById("loginBtn");
+const message = document.getElementById("message");
+const panel = document.getElementById("panel");
+
+function showMessage(text, type) {
+  message.textContent = text;
+  message.className = "message " + type;
+  message.style.display = "block";
+}
+function setLoggedIn(user) {
+  form.style.display = user ? "none" : "block";
+  panel.style.display = user ? "block" : "none";
+  if (user) {
+    message.style.display = "none";
+    document.querySelector(".subtitle").textContent = user.email || "Admin";
+  } else {
+    document.querySelector(".subtitle").innerHTML = "පරිපාලන පුවරුවට පිවිසෙන්න<br>Admin Login";
+  }
+}
+onAuthStateChanged(auth, (user) => setLoggedIn(user));
+
+form.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  loginBtn.disabled = true;
+  loginBtn.textContent = "පිවිසෙමින්...";
+  try {
+    await signInWithEmailAndPassword(auth, document.getElementById("email").value.trim(), document.getElementById("password").value);
+    form.reset();
+  } catch (error) {
+    const friendly = {
+      "auth/invalid-credential": "Email හෝ Password වැරදියි. නැවත පරීක්ෂා කරන්න.",
+      "auth/invalid-email": "නිවැරදි Email ලිපිනයක් ඇතුළත් කරන්න.",
+      "auth/too-many-requests": "උත්සාහ බොහෝ වාරයක් සිදු වී ඇත. ටික වේලාවකින් නැවත උත්සාහ කරන්න.",
+      "auth/network-request-failed": "Internet සම්බන්ධතාව පරීක්ෂා කර නැවත උත්සාහ කරන්න."
+    };
+    showMessage(friendly[error.code] || "Login වුණේ නැහැ. Email/Password සහ Firebase Authentication settings පරීක්ෂා කරන්න.", "error");
+  } finally {
+    loginBtn.disabled = false;
+    loginBtn.textContent = "Login වෙන්න";
+  }
+});
+document.getElementById("logoutBtn").addEventListener("click", async () => {
+  try { await signOut(auth); showMessage("Logout සාර්ථකයි.", "success"); }
+  catch { showMessage("Logout කිරීමට නොහැකි වුණා. නැවත උත්සාහ කරන්න.", "error"); }
+});
+</script>
+</body>
+</html>
