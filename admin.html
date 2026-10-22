@@ -1,101 +1,81 @@
 <!doctype html>
 <html lang="si">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="SIRILOOK Admin Login">
-<title>SIRILOOK | Admin Login</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="SIRILOOK Admin Panel"><title>SIRILOOK | Admin Panel</title>
 <style>
-:root{--wine:#7b284f;--pink:#f8eaf0;--ink:#261b21;--muted:#766a70;--cream:#fffaf8}
-*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:20px;background:linear-gradient(135deg,#fffaf8,#f8eaf0);font-family:Arial,"Noto Sans Sinhala",sans-serif;color:var(--ink)}
-.card{width:min(100%,430px);background:#fff;border:1px solid #f0dfe7;border-radius:18px;padding:28px;box-shadow:0 14px 45px #7b284f18}
-.logo{text-align:center;color:var(--wine);font-size:29px;font-weight:900;letter-spacing:3px}.subtitle{text-align:center;color:var(--muted);line-height:1.7;margin:8px 0 24px}
-label{display:block;font-size:14px;font-weight:bold;margin:15px 0 7px}input{width:100%;padding:13px;border:1px solid #dfcbd4;border-radius:8px;font-size:16px;background:#fff}input:focus{outline:2px solid #d6a6bc;border-color:var(--wine)}
-button{width:100%;padding:14px;border:0;border-radius:8px;background:var(--wine);color:#fff;font-size:16px;font-weight:bold;margin-top:20px;cursor:pointer}button:disabled{opacity:.65;cursor:wait}.message{margin-top:15px;padding:12px;border-radius:8px;line-height:1.6;font-size:14px;display:none}.error{background:#fff0f0;color:#9c2020}.success{background:#edf9ef;color:#176b2b}.panel{display:none}.hint{font-size:12px;color:var(--muted);text-align:center;line-height:1.7;margin-top:18px}.home{display:block;text-align:center;margin-top:18px;color:var(--wine);font-size:14px}
+:root{--wine:#7b284f;--pink:#f8eaf0;--ink:#261b21;--muted:#766a70;--cream:#fffaf8;--line:#ead9e1}
+*{box-sizing:border-box}body{margin:0;background:var(--cream);font-family:Arial,"Noto Sans Sinhala",sans-serif;color:var(--ink)}header{background:white;border-bottom:1px solid var(--line);padding:16px 5%;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.logo{font-size:25px;letter-spacing:3px;font-weight:900;color:var(--wine)}.wrap{max-width:1100px;margin:auto;padding:24px 16px 55px}.card{background:white;border:1px solid var(--line);border-radius:14px;padding:22px;margin-bottom:20px;box-shadow:0 8px 25px #7b284f0b}h1{font-size:25px;margin:0 0 8px}h2{font-size:20px;margin:0 0 18px}.muted{color:var(--muted);line-height:1.7;font-size:14px}.login{max-width:430px;margin:45px auto}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.field.full{grid-column:1/-1}label{display:block;font-size:14px;font-weight:bold;margin-bottom:7px}input,textarea,select{width:100%;padding:12px;border:1px solid #dfcbd4;border-radius:8px;font:inherit;background:#fff;color:var(--ink)}textarea{min-height:95px;resize:vertical}button,.btn{border:0;border-radius:8px;background:var(--wine);color:white;padding:12px 16px;font:inherit;font-weight:bold;cursor:pointer;text-decoration:none;display:inline-block}button:disabled{opacity:.6;cursor:wait}.secondary{background:#f3e5eb;color:var(--wine)}.danger{background:#a52735}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}.message{display:none;padding:12px;border-radius:8px;margin:14px 0;line-height:1.6;font-size:14px}.error{display:block;background:#fff0f0;color:#9c2020}.success{display:block;background:#edf9ef;color:#176b2b}.toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.products{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}.product{border:1px solid var(--line);border-radius:10px;overflow:hidden;min-width:0}.product img{width:100%;height:200px;object-fit:cover;background:var(--pink)}.pinfo{padding:13px}.pinfo h3{margin:0 0 8px;font-size:17px;overflow-wrap:anywhere}.price{color:var(--wine);font-weight:bold}.pinfo p{font-size:13px;color:var(--muted);line-height:1.6;overflow-wrap:anywhere}.small{font-size:12px;color:var(--muted)}.hidden{display:none!important}a{color:var(--wine)}@media(max-width:700px){.grid{grid-template-columns:1fr}.field.full{grid-column:auto}.products{grid-template-columns:repeat(2,minmax(0,1fr))}.card{padding:16px}.product img{height:160px}}@media(max-width:420px){.products{grid-template-columns:1fr}.product img{height:230px}}
 </style>
-</head>
-<body>
-<main class="card">
-  <div class="logo">SIRILOOK</div>
-  <p class="subtitle">පරිපාලන පුවරුවට පිවිසෙන්න<br>Admin Login</p>
-  <form id="loginForm">
-    <label for="email">Admin Email</label>
-    <input id="email" type="email" autocomplete="username" required placeholder="ඔබගේ email ලිපිනය">
-    <label for="password">Password</label>
-    <input id="password" type="password" autocomplete="current-password" required placeholder="ඔබගේ මුරපදය">
-    <button id="loginBtn" type="submit">Login වෙන්න</button>
-  </form>
-  <div id="message" class="message" role="status"></div>
-  <section id="panel" class="panel">
-    <h2>පිවිසීම සාර්ථකයි ✓</h2>
-    <p>ඔබ SIRILOOK Admin ගිණුමෙන් ඇතුළු වී ඇත.</p>
-    <p>ඊළඟ පියවරේදී ඇඳුම් එකතු කිරීම, මිල වෙනස් කිරීම සහ ඡායාරූප කළමනාකරණය සම්බන්ධ කරමු.</p>
-    <button id="logoutBtn" type="button">Logout</button>
-  </section>
-  <p class="hint">මෙය Admin සඳහා පමණි. ගිණුමක් සෑදීමේ විකල්පයක් මෙහි නැත.</p>
-  <a class="home" href="./index.html">← SIRILOOK වෙබ් අඩවියට ආපසු</a>
+</head><body>
+<header><a class="logo" href="./index.html">SIRILOOK</a><div class="actions" style="margin:0"><a class="btn secondary" href="./index.html">වෙබ් අඩවිය බලන්න</a><button id="logoutBtn" class="hidden" type="button">Logout</button></div></header>
+<main class="wrap">
+<section id="loginCard" class="card login"><h1>Admin Login</h1><p class="muted">SIRILOOK ඇඳුම් කළමනාකරණ පුවරුවට පිවිසෙන්න.</p><form id="loginForm"><div class="field"><label for="email">Admin Email</label><input id="email" type="email" autocomplete="username" required placeholder="Email ලිපිනය"></div><div class="field" style="margin-top:14px"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required placeholder="මුරපදය"></div><button id="loginBtn" style="width:100%;margin-top:18px" type="submit">Login වෙන්න</button></form><div id="loginMessage" class="message" role="status"></div><p class="small">අවසර ලත් පරිපාලක ගිණුමෙන් පමණක් පිවිසෙන්න.</p></section>
+<section id="appPanel" class="hidden">
+<div class="card"><div class="toolbar"><div><h1>ඇඳුම් කළමනාකරණය</h1><p class="muted">මෙතැන එක් කරන භාණ්ඩ ප්‍රධාන SIRILOOK වෙබ් අඩවියේ පෙන්වයි.</p></div><div class="small" id="signedInAs"></div></div><div id="appMessage" class="message" role="status"></div></div>
+<section class="card" id="formCard"><h2 id="formTitle">＋ අලුත් ඇඳුමක් එක් කරන්න</h2>
+<form id="productForm"><div class="grid">
+<div class="field"><label for="name">ඇඳුමේ නම *</label><input id="name" required maxlength="100" placeholder="උදා: Floral Summer Dress"></div>
+<div class="field"><label for="price">මිල (රු.) *</label><input id="price" type="number" required min="0" step="0.01" placeholder="4500"></div>
+<div class="field"><label for="category">කාණ්ඩය *</label><select id="category" required><option value="">කාණ්ඩය තෝරන්න</option><option>කාන්තා ඇඳුම්</option><option>පිරිමි ඇඳුම්</option><option>ළමා ඇඳුම්</option><option>සාම්ප්‍රදායික ඇඳුම්</option><option>අනෙකුත්</option></select></div>
+<div class="field"><label for="sizes">ප්‍රමාණ (Sizes)</label><input id="sizes" maxlength="100" placeholder="S, M, L, XL"></div>
+<div class="field"><label for="colors">වර්ණ (Colors)</label><input id="colors" maxlength="150" placeholder="කළු, සුදු, රෝස"></div>
+<div class="field"><label for="imageUrl">ඡායාරූප URL</label><input id="imageUrl" type="url" placeholder="https://..."></div>
+<div class="field full"><label for="description">විස්තර</label><textarea id="description" maxlength="1000" placeholder="ඇඳුමේ විස්තර, රෙදි වර්ගය ආදිය"></textarea></div>
+<div class="field"><label for="availability">තත්ත්වය</label><select id="availability"><option value="available">ලබාගත හැකිය</option><option value="soldout">අවසන් වී ඇත</option></select></div>
+</div><div class="actions"><button id="saveBtn" type="submit">භාණ්ඩය සුරකින්න</button><button id="cancelEditBtn" class="secondary hidden" type="button">වෙනස්කම් අවලංගු කරන්න</button></div><p class="small">දැනට ඡායාරූපයක් පෙන්වීමට සෘජු image URL එකක් භාවිතා කරන්න. රූපය මහජනව බලන්න හැකි HTTPS සබැඳියක් විය යුතුය.</p></form></section>
+<section class="card"><div class="toolbar"><h2 style="margin:0">ඔබේ භාණ්ඩ</h2><span id="productCount" class="small">භාණ්ඩ පූරණය වෙමින්...</span></div><div id="productList" class="products" style="margin-top:18px"></div><p id="emptyState" class="muted hidden">තවම භාණ්ඩ එකතු කර නැහැ. ඉහත පෝරමයෙන් පළමු ඇඳුම එක් කරන්න.</p></section>
+</section>
 </main>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyDhlituAgFNbUhnkmivVgcMeXUPEODNZHQ",
-  authDomain: "sirilook-4683c.firebaseapp.com",
-  projectId: "sirilook-4683c",
-  storageBucket: "sirilook-4683c.firebasestorage.app",
-  messagingSenderId: "325375844401",
-  appId: "1:325375844401:web:ee7142002af033781c7510"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const form = document.getElementById("loginForm");
-const loginBtn = document.getElementById("loginBtn");
-const message = document.getElementById("message");
-const panel = document.getElementById("panel");
-
-function showMessage(text, type) {
-  message.textContent = text;
-  message.className = "message " + type;
-  message.style.display = "block";
+import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+const firebaseConfig={apiKey:"AIzaSyDhlituAgFNbUhnkmivVgcMeXUPEODNZHQ",authDomain:"sirilook-4683c.firebaseapp.com",projectId:"sirilook-4683c",storageBucket:"sirilook-4683c.firebasestorage.app",messagingSenderId:"325375844401",appId:"1:325375844401:web:ee7142002af033781c7510"};
+const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
+const ADMIN_EMAIL="srimalharsha@gmail.com";
+const loginCard=document.getElementById("loginCard"),appPanel=document.getElementById("appPanel"),loginForm=document.getElementById("loginForm"),loginMessage=document.getElementById("loginMessage"),appMessage=document.getElementById("appMessage"),logoutBtn=document.getElementById("logoutBtn"),productForm=document.getElementById("productForm"),productList=document.getElementById("productList"),emptyState=document.getElementById("emptyState"),productCount=document.getElementById("productCount");
+let editingId=null,unsubscribeProducts=null,products=[];
+function message(el,text,type){el.textContent=text;el.className="message "+type;}
+function clearMessage(el){el.textContent="";el.className="message";}
+function resetForm(){editingId=null;productForm.reset();document.getElementById("formTitle").textContent="＋ අලුත් ඇඳුමක් එක් කරන්න";document.getElementById("saveBtn").textContent="භාණ්ඩය සුරකින්න";document.getElementById("cancelEditBtn").classList.add("hidden");}
+function textElement(tag,txt,cls){const el=document.createElement(tag);el.textContent=txt||"";if(cls)el.className=cls;return el;}
+function renderProducts(){
+ productList.replaceChildren();productCount.textContent=products.length+" භාණ්ඩ";
+ emptyState.classList.toggle("hidden",products.length!==0);
+ products.forEach(function(p){
+  const card=document.createElement("article");card.className="product";
+  if(p.imageUrl){const img=document.createElement("img");img.src=p.imageUrl;img.alt=p.name||"SIRILOOK ඇඳුම";img.loading="lazy";img.onerror=function(){this.style.display="none"};card.appendChild(img)}
+  const info=document.createElement("div");info.className="pinfo";info.appendChild(textElement("h3",p.name));
+  info.appendChild(textElement("div","රු. "+Number(p.price||0).toLocaleString("en-LK",{maximumFractionDigits:2}),"price"));
+  info.appendChild(textElement("p",p.category||""));
+  if(p.sizes)info.appendChild(textElement("p","ප්‍රමාණ: "+p.sizes));
+  if(p.colors)info.appendChild(textElement("p","වර්ණ: "+p.colors));
+  if(p.description)info.appendChild(textElement("p",p.description));
+  info.appendChild(textElement("p",p.availability==="soldout"?"තත්ත්වය: අවසන් වී ඇත":"තත්ත්වය: ලබාගත හැකිය"));
+  const actions=document.createElement("div");actions.className="actions";
+  const edit=document.createElement("button");edit.type="button";edit.className="secondary";edit.textContent="වෙනස් කරන්න";edit.addEventListener("click",function(){startEdit(p.id)});
+  const del=document.createElement("button");del.type="button";del.className="danger";del.textContent="මකන්න";del.addEventListener("click",function(){removeProduct(p.id,p.name)});
+  actions.append(edit,del);info.appendChild(actions);card.appendChild(info);productList.appendChild(card);
+ });
 }
-function setLoggedIn(user) {
-  form.style.display = user ? "none" : "block";
-  panel.style.display = user ? "block" : "none";
-  if (user) {
-    message.style.display = "none";
-    document.querySelector(".subtitle").textContent = user.email || "Admin";
-  } else {
-    document.querySelector(".subtitle").innerHTML = "පරිපාලන පුවරුවට පිවිසෙන්න<br>Admin Login";
-  }
-}
-onAuthStateChanged(auth, (user) => setLoggedIn(user));
-
-form.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  loginBtn.disabled = true;
-  loginBtn.textContent = "පිවිසෙමින්...";
-  try {
-    await signInWithEmailAndPassword(auth, document.getElementById("email").value.trim(), document.getElementById("password").value);
-    form.reset();
-  } catch (error) {
-    const friendly = {
-      "auth/invalid-credential": "Email හෝ Password වැරදියි. නැවත පරීක්ෂා කරන්න.",
-      "auth/invalid-email": "නිවැරදි Email ලිපිනයක් ඇතුළත් කරන්න.",
-      "auth/too-many-requests": "උත්සාහ බොහෝ වාරයක් සිදු වී ඇත. ටික වේලාවකින් නැවත උත්සාහ කරන්න.",
-      "auth/network-request-failed": "Internet සම්බන්ධතාව පරීක්ෂා කර නැවත උත්සාහ කරන්න."
-    };
-    showMessage(friendly[error.code] || "Login වුණේ නැහැ. Email/Password සහ Firebase Authentication settings පරීක්ෂා කරන්න.", "error");
-  } finally {
-    loginBtn.disabled = false;
-    loginBtn.textContent = "Login වෙන්න";
-  }
+function startEdit(id){const p=products.find(function(item){return item.id===id});if(!p)return;editingId=id;["name","price","category","sizes","colors","imageUrl","description","availability"].forEach(function(k){document.getElementById(k).value=p[k]??(k==="availability"?"available":"")});document.getElementById("formTitle").textContent="භාණ්ඩය වෙනස් කරන්න";document.getElementById("saveBtn").textContent="වෙනස්කම් සුරකින්න";document.getElementById("cancelEditBtn").classList.remove("hidden");document.getElementById("formCard").scrollIntoView({behavior:"smooth"});clearMessage(appMessage)}
+async function removeProduct(id,name){if(!confirm("“"+name+"” මකා දමන්නද?"))return;try{await deleteDoc(doc(db,"products",id));message(appMessage,"භාණ්ඩය මකා දැමුවා.","success")}catch(e){message(appMessage,"මකා දැමීමට නොහැකි වුණා. Firestore Rules පරීක්ෂා කරන්න. ("+e.code+")","error")}}
+function listenProducts(){if(unsubscribeProducts)unsubscribeProducts();unsubscribeProducts=onSnapshot(collection(db,"products"),function(snap){products=snap.docs.map(function(d){return Object.assign({id:d.id},d.data())});products.sort(function(a,b){return (a.name||"").localeCompare(b.name||"")});renderProducts()},function(e){message(appMessage,"භාණ්ඩ කියවීමට නොහැකි වුණා. Firestore Rules හි products කියවීමට අවසර තිබේද බලන්න. ("+e.code+")","error");productCount.textContent="දත්ත ලබාගත නොහැකිය"})}
+onAuthStateChanged(auth,function(user){
+ if(user&&user.email&&user.email.toLowerCase()===ADMIN_EMAIL){loginCard.classList.add("hidden");appPanel.classList.remove("hidden");logoutBtn.classList.remove("hidden");document.getElementById("signedInAs").textContent=user.email;listenProducts()}
+ else{if(unsubscribeProducts){unsubscribeProducts();unsubscribeProducts=null}appPanel.classList.add("hidden");logoutBtn.classList.add("hidden");loginCard.classList.remove("hidden");if(user)signOut(auth).catch(function(){});}
 });
-document.getElementById("logoutBtn").addEventListener("click", async () => {
-  try { await signOut(auth); showMessage("Logout සාර්ථකයි.", "success"); }
-  catch { showMessage("Logout කිරීමට නොහැකි වුණා. නැවත උත්සාහ කරන්න.", "error"); }
+loginForm.addEventListener("submit",async function(e){e.preventDefault();const btn=document.getElementById("loginBtn");btn.disabled=true;btn.textContent="පිවිසෙමින්...";clearMessage(loginMessage);try{const result=await signInWithEmailAndPassword(auth,document.getElementById("email").value.trim(),document.getElementById("password").value);if(!result.user.email||result.user.email.toLowerCase()!==ADMIN_EMAIL){await signOut(auth);message(loginMessage,"මෙම ගිණුමට Admin අවසර නැහැ.","error")}else{loginForm.reset()}}catch(e){message(loginMessage,({"auth/invalid-credential":"Email හෝ Password වැරදියි.","auth/too-many-requests":"උත්සාහ බොහෝ වාරයක් සිදු වී ඇත. පසුව උත්සාහ කරන්න.","auth/network-request-failed":"Internet සම්බන්ධතාව පරීක්ෂා කරන්න."})[e.code]||"Login වුණේ නැහැ. නැවත උත්සාහ කරන්න.","error")}finally{btn.disabled=false;btn.textContent="Login වෙන්න"}});
+logoutBtn.addEventListener("click",async function(){if(unsubscribeProducts){unsubscribeProducts();unsubscribeProducts=null}await signOut(auth);resetForm()});
+document.getElementById("cancelEditBtn").addEventListener("click",resetForm);
+productForm.addEventListener("submit",async function(e){
+ e.preventDefault();clearMessage(appMessage);
+ const user=auth.currentUser;if(!user||user.email.toLowerCase()!==ADMIN_EMAIL){message(appMessage,"මෙම ක්‍රියාවට අවසර නැහැ. නැවත Login වෙන්න.","error");return}
+ const price=Number(document.getElementById("price").value);if(!Number.isFinite(price)||price<0){message(appMessage,"නිවැරදි මිලක් ඇතුළත් කරන්න.","error");return}
+ const data={name:document.getElementById("name").value.trim(),price:price,category:document.getElementById("category").value,sizes:document.getElementById("sizes").value.trim(),colors:document.getElementById("colors").value.trim(),imageUrl:document.getElementById("imageUrl").value.trim(),description:document.getElementById("description").value.trim(),availability:document.getElementById("availability").value,updatedAt:serverTimestamp()};
+ if(!data.name||!data.category){message(appMessage,"ඇඳුමේ නම සහ කාණ්ඩය ඇතුළත් කරන්න.","error");return}
+ const btn=document.getElementById("saveBtn");btn.disabled=true;
+ try{if(editingId){await updateDoc(doc(db,"products",editingId),data);message(appMessage,"භාණ්ඩයේ විස්තර යාවත්කාලීන කළා.","success")}else{data.createdAt=serverTimestamp();await addDoc(collection(db,"products"),data);message(appMessage,"අලුත් භාණ්ඩය සාර්ථකව එක් කළා.","success")}resetForm()}catch(e){message(appMessage,"සුරැකීමට නොහැකි වුණා. Firestore Rules Publish කර තිබේද බලන්න. ("+e.code+")","error")}finally{btn.disabled=false}
 });
-</script>
-</body>
-</html>
+</script></body></html>
