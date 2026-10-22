@@ -11,7 +11,7 @@ import {getFirestore,doc,getDoc} from "https://www.gstatic.com/firebasejs/11.10.
 const cfg={apiKey:"AIzaSyDhlituAgFNbUhnkmivVgcMeXUPEODNZHQ",authDomain:"sirilook-4683c.firebaseapp.com",projectId:"sirilook-4683c",storageBucket:"sirilook-4683c.firebasestorage.app",messagingSenderId:"325375844401",appId:"1:325375844401:web:ee7142002af033781c7510"};
 const db=getFirestore(initializeApp(cfg)),root=document.getElementById("content"),id=new URLSearchParams(location.search).get("id");
 function node(tag,text,cls){const e=document.createElement(tag);e.textContent=text||"";if(cls)e.className=cls;return e}
-function parseColors(raw){if(Array.isArray(raw))return raw.map(function(c){return {name:String(c.name||"").trim(),code:String(c.code||"").trim(),image:String(c.image||"").trim()}}).filter(function(c){return c.name});const value=String(raw||"");const parts=value.includes("|")?value.split(";"):value.split(",");return parts.map(function(part){const bits=part.trim().split("|");if(bits.length>=2)return {name:(bits[0]||"").trim(),code:(bits[1]||"").trim(),image:(bits.slice(2).join("|")||"").trim()};const legacy=part.trim().split(":");return {name:(legacy.shift()||"").trim(),code:legacy.join(":").trim(),image:""}}).filter(function(c){return c.name})}
+function parseColors(raw){if(Array.isArray(raw))return raw.map(function(c){return {code:String(c.code||c.name||"").trim(),image:String(c.image||"").trim()}}).filter(function(c){return c.code||c.image});const value=String(raw||"");const parts=value.includes("|")?value.split(";"):value.split(",");return parts.map(function(part){const bits=part.trim().split("|");if(bits.length>=3)return {code:(bits[1]||bits[0]||"").trim(),image:(bits.slice(2).join("|")||"").trim()};if(bits.length===2)return {code:(bits[0]||"").trim(),image:(bits[1]||"").trim()};const legacy=part.trim().split(":");return {code:(legacy.shift()||"").trim(),image:""}}).filter(function(c){return c.code||c.image})}
 function show(p){
  root.className="product-page";root.replaceChildren();
  const hero=document.createElement("section");hero.className="hero";
@@ -25,9 +25,9 @@ function show(p){
   const grid=node("div","","colors");
   colors.forEach(function(color){
    const b=document.createElement("button");b.type="button";b.className="swatch";
-   if(color.image){const im=document.createElement("img");im.src=color.image;im.alt=color.name+" රෙදි වර්ණය";im.onerror=function(){im.style.display="none";b.insertBefore(node("div","ඡායාරූපය නොපෙන්වයි","placeholder"),b.firstChild)};b.appendChild(im)}
+   if(color.image){const im=document.createElement("img");im.src=color.image;im.alt=(color.code||"රෙදි")+" රෙදි ඡායාරූපය";im.onerror=function(){im.style.display="none";b.insertBefore(node("div","ඡායාරූපය නොපෙන්වයි","placeholder"),b.firstChild)};b.appendChild(im)}
    else{const ph=node("div",color.code&&/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(color.code)?"":"🧵","placeholder");if(color.code&&/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(color.code))ph.style.background=color.code;b.appendChild(ph)}
-   b.appendChild(node("strong",color.name));if(color.code)b.appendChild(node("small","Code: "+color.code));
+   b.appendChild(node("strong",color.code||"Colour"));
    b.addEventListener("click",function(){selectedColor=color;grid.querySelectorAll(".swatch").forEach(x=>x.classList.toggle("selected",x===b));summary();enable()});grid.appendChild(b)
   });colorSection.appendChild(grid)
  }else{colorSection.appendChild(node("p","මෙම ඇඳුමට වර්ණ ඡායාරූප තවම එක් කර නැහැ.","muted"))}
@@ -39,10 +39,10 @@ function show(p){
  if(p.description)panel.appendChild(node("p",p.description,"muted"));if(p.category)panel.appendChild(node("p",p.category,"muted"));
  if(sizes.length){panel.appendChild(node("div",colors.length?"2. Size එක තෝරන්න":"1. Size එක තෝරන්න","label"));const sg=node("div","","sizes");sizes.forEach(function(s){const b=node("button",s,"size");b.type="button";b.addEventListener("click",function(){selectedSize=s;sg.querySelectorAll(".size").forEach(x=>x.classList.toggle("selected",x===b));summary();enable()});sg.appendChild(b)});panel.appendChild(sg)}
  const summaryBox=node("div","වර්ණය සහ Size එක තෝරාගත් පසු මෙහි පෙන්වයි.","chosen");panel.appendChild(summaryBox);
- function summary(){summaryBox.textContent="තෝරාගත් වර්ණය: "+(selectedColor?selectedColor.name:"තවම තෝරා නැත")+" · Colour Code: "+(selectedColor?(selectedColor.code||"නොමැත"):"—")+" · Size: "+(selectedSize||"තවම තෝරා නැත")}
+ function summary(){summaryBox.textContent="Colour Code: "+(selectedColor?(selectedColor.code||"නොමැත"):"—")+" · Size: "+(selectedSize||"තවම තෝරා නැත")}
  const order=node("button","වර්ණය සහ Size එක තෝරන්න","btn");order.type="button";order.disabled=true;
  function enable(){const ready=(colors.length===0||!!selectedColor)&&(sizes.length===0||!!selectedSize)&&p.availability!=="soldout";order.disabled=!ready;order.textContent=p.availability==="soldout"?"භාණ්ඩය අවසන්":ready?"WhatsApp හරහා ඇණවුම් කරන්න":"වර්ණය සහ Size එක තෝරන්න"}
- order.addEventListener("click",function(){if(order.disabled)return;const msg="SIRILOOK ORDER / INQUIRY\nStyle Number: "+(p.styleNumber||p.name||"Not set")+"\nItem: "+(p.name||"Clothing")+"\nPrice: LKR "+Number(p.price||0)+"\nColour: "+(selectedColor?selectedColor.name:"Not specified")+"\nColour Code: "+(selectedColor?(selectedColor.code||"Not specified"):"Not specified")+"\nSize: "+(selectedSize||"Not specified");window.open("https://wa.me/94789576303?text="+encodeURIComponent(msg),"_blank","noopener")});
+ order.addEventListener("click",function(){if(order.disabled)return;const msg="SIRILOOK ORDER / INQUIRY\nStyle Number: "+(p.styleNumber||p.name||"Not set")+"\nItem: "+(p.name||"Clothing")+"\nPrice: LKR "+Number(p.price||0)+"\nCustomer Code: "+(p.customerCode||"Not assigned")+"\nColour Code: "+(selectedColor?(selectedColor.code||"Not specified"):"Not specified")+"\nSize: "+(selectedSize||"Not specified");window.open("https://wa.me/94789576303?text="+encodeURIComponent(msg),"_blank","noopener")});
  panel.appendChild(order);panel.appendChild(node("p","ඇණවුම WhatsApp තුළ පණිවිඩයක් ලෙස සකස් වේ. යැවීමට ඔබ WhatsApp තුළ Send ඔබන්න.","notice"));root.appendChild(panel);enable();
 }
 if(!id){root.textContent="ඇඳුම තෝරාගෙන නැහැ. වෙබ් අඩවියට ආපසු ගොස් ඇඳුමක ඡායාරූපය touch කරන්න.";root.className="error"}else{getDoc(doc(db,"products",id)).then(function(s){if(s.exists())show(s.data());else{root.textContent="මෙම ඇඳුම සොයාගැනීමට නොහැකි වුණා.";root.className="error"}}).catch(function(){root.textContent="ඇඳුමේ විස්තර ලබාගැනීමට නොහැකි වුණා. නැවත උත්සාහ කරන්න.";root.className="error"})}
