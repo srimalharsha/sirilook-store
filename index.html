@@ -34,7 +34,7 @@ function showProducts(items){
  if(!items.length){const empty=el("div","අලුත් ඇඳුම් ළඟදීම මෙහි එක් කෙරේ. නැතහොත් WhatsApp හරහා අපෙන් විමසන්න.","empty");list.appendChild(empty);return}
  items.forEach(function(p){
   const card=document.createElement("article");card.className="product";
-  if(p.imageUrl){const img=document.createElement("img");img.src=p.imageUrl;img.alt=p.name||"SIRILOOK ඇඳුම";img.loading="lazy";img.style.cursor="pointer";img.title="වර්ණ තෝරාගැනීමට ඡායාරූපය touch කරන්න";img.addEventListener("click",function(){const swatches=card.querySelector(".color-options");if(swatches){swatches.classList.add("show-colors");swatches.scrollIntoView({behavior:"smooth",block:"nearest"})}const sizesPanel=card.querySelector(".size-options");if(sizesPanel&&!colors.length)sizesPanel.classList.remove("hidden-choice")});img.onerror=function(){this.style.display="none"};card.appendChild(img)}
+  if(p.imageUrl){const img=document.createElement("img");img.src=p.imageUrl;img.alt=p.name||"SIRILOOK ඇඳුම";img.loading="lazy";img.style.cursor="pointer";img.title="වර්ණ තෝරාගැනීමට ඡායාරූපය touch කරන්න";img.addEventListener("click",function(){window.location.href="product.html?id="+encodeURIComponent(p.id)});img.onerror=function(){this.style.display="none"};card.appendChild(img)}
   const info=document.createElement("div");info.className="product-info";info.appendChild(el("h3",p.name||"SIRILOOK ඇඳුම"));
   info.appendChild(el("div","රු. "+Number(p.price||0).toLocaleString("en-LK",{maximumFractionDigits:2}),"price"));
   if(p.styleNumber)info.appendChild(el("p","Style No: "+p.styleNumber));
