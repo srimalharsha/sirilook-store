@@ -1,0 +1,37 @@
+name: Fix customer name in WhatsApp order
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-customer-name.yml'
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add customer name to WhatsApp order
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          old='<div id="cartItems"><div class="empty">Cart එකට තවම භාණ්ඩ එකතු කර නැහැ.</div></div><div id="cartSummary" class="cart-summary" hidden></div><button id="checkoutCart" class="cart-checkout" type="button" hidden>WhatsApp හරහා සියලුම භාණ්ඩ ඇණවුම් කරන්න</button>'
+          new='<div id="cartItems"><div class="empty">Cart එකට තවම භාණ්ඩ එකතු කර නැහැ.</div></div><div id="cartSummary" class="cart-summary" hidden></div><label style="display:block;margin:12px 0;font-weight:bold">Customer Name<input id="customerName" type="text" maxlength="80" placeholder="ඔබේ නම" style="width:100%;margin-top:6px;padding:13px;border:1px solid var(--line);border-radius:8px;font:inherit;background:#fff"></label><button id="checkoutCart" class="cart-checkout" type="button" hidden>WhatsApp හරහා සියලුම භාණ්ඩ ඇණවුම් කරන්න</button>'
+          if old not in s: raise SystemExit('cart markup not found')
+          s=s.replace(old,new,1)
+          old='const items=readCart();if(!items.length)return;const btn=document.getElementById("checkoutCart");'
+          new='const items=readCart();if(!items.length)return;const customerName=String(document.getElementById("customerName")?.value||"").trim().slice(0,80);if(!customerName){alert("කරුණාකර Customer Name එක ඇතුළත් කරන්න.");document.getElementById("customerName")?.focus();return}const btn=document.getElementById("checkoutCart");'
+          if old not in s: raise SystemExit('checkout start not found')
+          s=s.replace(old,new,1)
+          old='await setDoc(ref,{code,items:safeItems,total:Math.round(total*100)/100,status:"received",createdAt:serverTimestamp()});const lines=["SIRILOOK - ORDER REQUEST","Tracking Code: "+code,'
+          new='await setDoc(ref,{code,customerName,items:safeItems,total:Math.round(total*100)/100,status:"received",createdAt:serverTimestamp()});const lines=["SIRILOOK - ORDER REQUEST","Customer Name: "+customerName,"Tracking Code: "+code,'
+          if old not in s: raise SystemExit('order save block not found')
+          s=s.replace(old,new,1)
+          p.write_text(s,encoding='utf-8')
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Add customer name to WhatsApp orders" || exit 0
+          git push
