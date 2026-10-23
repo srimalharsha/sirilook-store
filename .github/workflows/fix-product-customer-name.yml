@@ -1,0 +1,33 @@
+name: Fix product customer name
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-product-customer-name.yml'
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Replace customer code with entered customer name
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('product.html')
+          s=p.read_text(encoding='utf-8')
+          old='const summaryBox=node("Colour Code: — · Size: තවම තෝරා නැත","chosen");panel.appendChild(summaryBox);'
+          new='const nameLabel=node("div","Customer Name","label");const customerName=document.createElement("input");customerName.id="customerName";customerName.type="text";customerName.maxLength=80;customerName.placeholder="ඔබේ නම";customerName.style.cssText="width:100%;padding:13px;border:1px solid var(--line);border-radius:8px;font:inherit;background:#fff";nameLabel.appendChild(customerName);panel.appendChild(nameLabel);const summaryBox=node("div","Colour Code: — · Size: තවම තෝරා නැත","chosen");panel.appendChild(summaryBox);'
+          if old not in s: raise SystemExit('summary block not found')
+          s=s.replace(old,new,1)
+          old='order.onclick=()=>{if(order.disabled)return;const m="SIRILOOK ORDER / INQUIRY\\nStyle Number: "+(p.styleNumber||p.name||"Not set")+"\\nItem: "+(p.name||"Clothing")+"\\nPrice: LKR "+Number(p.price||0)+"\\nCustomer Code: "+(p.customerCode||"Not assigned")+"\\nColour Code: "+(selectedColor?.code||"Not specified")+"\\nSize: "+(selectedSize||"Not specified");window.open("https://wa.me/94789576303?text="+encodeURIComponent(m),"_blank")}'
+          new='order.onclick=()=>{if(order.disabled)return;const name=customerName.value.trim();if(!name){alert("කරුණාකර Customer Name එක ඇතුළත් කරන්න.");customerName.focus();return}const m="SIRILOOK ORDER / INQUIRY\\nCustomer Name: "+name+"\\nStyle Number: "+(p.styleNumber||p.name||"Not set")+"\\nItem: "+(p.name||"Clothing")+"\\nPrice: LKR "+Number(p.price||0)+"\\nColour Code: "+(selectedColor?.code||"Not specified")+"\\nSize: "+(selectedSize||"Not specified");window.open("https://wa.me/94789576303?text="+encodeURIComponent(m),"_blank")}'
+          if old not in s: raise SystemExit('order handler not found')
+          s=s.replace(old,new,1)
+          p.write_text(s,encoding='utf-8')
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add product.html
+          git commit -m "Use customer name in direct WhatsApp order" || exit 0
+          git push
