@@ -41,7 +41,7 @@ service cloud.firestore {
           'code', 'items', 'total', 'status', 'createdAt'
         ])
         && request.resource.data.keys().hasAll([
-          'code', 'customerName', 'items', 'total', 'status', 'createdAt'
+          'code', 'items', 'total', 'status', 'createdAt'
         ])
         && request.resource.data.code == orderId
         && request.resource.data.items is list
