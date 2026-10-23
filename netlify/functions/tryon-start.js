@@ -1,5 +1,5 @@
 exports.handler = async (event) => {
-  const headers = { "content-type": "application/json", "access-control-allow-origin": "*" };
+  const headers = { "content-type": "application/json", "cache-control": "no-store" };
   if (event.httpMethod === "OPTIONS") return { statusCode: 204, headers, body: "" };
   if (event.httpMethod !== "POST") return { statusCode: 405, headers, body: JSON.stringify({ error: "POST only" }) };
 
@@ -9,19 +9,24 @@ exports.handler = async (event) => {
   try {
     const body = JSON.parse(event.body || "{}");
     const modelImage = String(body.modelImage || "");
-    const productImage = String(body.productImage || "");
+    const garmentImage = String(body.productImage || "");
     const category = ["auto", "tops", "bottoms", "one-pieces"].includes(body.category) ? body.category : "auto";
-    const prompt = String(body.prompt || "").slice(0, 500);
-    if (!modelImage.startsWith("data:image/")) throw new Error("Please upload a valid customer photo.");
-    if (!/^https?:\/\//i.test(productImage)) throw new Error("Product image URL is invalid.");
-    if (modelImage.length > 30 * 1024 * 1024) throw new Error("Customer photo is too large.");
+    if (!/^data:image\/(jpeg|jpg|png|webp);base64,/i.test(modelImage)) throw new Error("Please upload a JPG, PNG, or WebP customer photo.");
+    if (!/^https:\/\//i.test(garmentImage)) throw new Error("Product image URL must use HTTPS.");
+    if (modelImage.length > 14 * 1024 * 1024) throw new Error("Customer photo is too large. Please choose a photo under 10 MB.");
 
     const response = await fetch("https://api.fashn.ai/v1/run", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
       body: JSON.stringify({
         model_name: "tryon-max",
-        inputs: { model_image: modelImage, product_image: productImage, prompt, resolution: "1k", generation_mode: "fast", category, output_format: "jpeg", return_base64: true }
+        inputs: {
+          model_image: modelImage,
+          garment_image: garmentImage,
+          category,
+          mode: "balanced",
+          output_format: "png"
+        }
       })
     });
     const data = await response.json();
