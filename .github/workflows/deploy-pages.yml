@@ -28,7 +28,8 @@ jobs:
       - name: Prepare premium storefront
         run: |
           mkdir -p _site
-          cp -R . _site/
+          cp -R index.html product.html admin.html track-order.html premium.css firestore.rules _site/ 2>/dev/null || true
+          cp -R assets _site/ 2>/dev/null || true
           python3 - <<'PY'
           from pathlib import Path
           p=Path('_site/index.html')
