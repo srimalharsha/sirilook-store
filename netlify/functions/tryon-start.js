@@ -9,10 +9,11 @@ exports.handler = async (event) => {
   try {
     const body = JSON.parse(event.body || "{}");
     const modelImage = String(body.modelImage || "");
-    const garmentImage = String(body.productImage || "");
+    const productImage = String(body.productImage || "");
     const category = ["auto", "tops", "bottoms", "one-pieces"].includes(body.category) ? body.category : "auto";
+    const prompt = String(body.prompt || "").slice(0, 500);
     if (!/^data:image\/(jpeg|jpg|png|webp);base64,/i.test(modelImage)) throw new Error("Please upload a JPG, PNG, or WebP customer photo.");
-    if (!/^https:\/\//i.test(garmentImage)) throw new Error("Product image URL must use HTTPS.");
+    if (!/^https:\/\//i.test(productImage)) throw new Error("Product image URL must use HTTPS.");
     if (modelImage.length > 14 * 1024 * 1024) throw new Error("Customer photo is too large. Please choose a photo under 10 MB.");
 
     const response = await fetch("https://api.fashn.ai/v1/run", {
@@ -22,10 +23,12 @@ exports.handler = async (event) => {
         model_name: "tryon-max",
         inputs: {
           model_image: modelImage,
-          garment_image: garmentImage,
-          category,
-          mode: "balanced",
-          output_format: "png"
+          product_image: productImage,
+          prompt,
+          resolution: "1k",
+          generation_mode: "fast",
+          output_format: "jpeg",
+          return_base64: false
         }
       })
     });
