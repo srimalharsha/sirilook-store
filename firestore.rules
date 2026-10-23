@@ -33,18 +33,20 @@ service cloud.firestore {
     }
 
     match /orders/{orderId} {
-      // Customers can only read one order by its unguessable tracking code.
-      // They cannot list all orders; only the admin can list orders.
+      // Customers can read a single order by its tracking code, but cannot list orders.
       allow get: if true;
       allow list: if isAdmin();
       allow create: if
         request.resource.data.keys().hasOnly([
-          'code', 'items', 'total', 'status', 'createdAt'
+          'code', 'customerName', 'items', 'total', 'status', 'createdAt'
         ])
         && request.resource.data.keys().hasAll([
-          'code', 'items', 'total', 'status', 'createdAt'
+          'code', 'customerName', 'items', 'total', 'status', 'createdAt'
         ])
         && request.resource.data.code == orderId
+        && request.resource.data.customerName is string
+        && request.resource.data.customerName.size() > 0
+        && request.resource.data.customerName.size() <= 80
         && request.resource.data.items is list
         && request.resource.data.items.size() > 0
         && request.resource.data.items.size() <= 30
