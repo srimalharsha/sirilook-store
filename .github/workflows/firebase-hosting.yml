@@ -1,3 +1,4 @@
+# Redeploy trigger: publish latest SIRILOOK admin tools
 name: Deploy SIRILOOK to Firebase Hosting
 
 on:
