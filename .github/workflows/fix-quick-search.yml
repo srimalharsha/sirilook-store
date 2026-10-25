@@ -1,0 +1,39 @@
+name: Fix Admin Quick Search
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: ${{ !contains(github.event.head_commit.message, 'Fix admin quick search buttons') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fix quick search buttons
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('admin.html')
+          s = p.read_text(encoding='utf-8')
+          old = '<a href="#styleLookupCode">🔎 Style Search</a><a href="#colourLookupCode">🎨 Colour Search</a>'
+          new = '<button type="button" onclick="activateAdminTab(\'productFormSection\');setTimeout(()=>document.getElementById(\'styleLookupCode\')?.focus(),50)">🔎 Style Search</button><button type="button" onclick="activateAdminTab(\'productFormSection\');setTimeout(()=>document.getElementById(\'colourLookupCode\')?.focus(),50)">🎨 Colour Search</button>'
+          if old not in s:
+              print('Quick search buttons already fixed or source changed; nothing to do.')
+          else:
+              p.write_text(s.replace(old, new), encoding='utf-8')
+      - name: Commit fix
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add admin.html
+          if git diff --cached --quiet; then
+            echo 'No changes to commit.'
+          else
+            git commit -m 'Fix admin quick search buttons'
+            git push
+          fi
