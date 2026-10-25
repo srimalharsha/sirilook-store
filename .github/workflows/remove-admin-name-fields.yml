@@ -1,0 +1,44 @@
+name: Remove Admin Name Fields
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Remove item name and admin-only customer name fields
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          p = Path('admin.html')
+          s = p.read_text(encoding='utf-8')
+          original = s
+
+          # Remove the product/item-name form block by its input id.
+          s = re.sub(r'<div[^>]*>\s*<label[^>]*>[^<]*(?:ඇඳුමේ නම|Item Name|Item name)[^<]*</label>.*?</div>', '', s, count=1, flags=re.I|re.S)
+          s = re.sub(r'<div[^>]*>\s*<label[^>]*>[^<]*(?:Customer Name \(Admin එකට පමණයි\)|Customer Name)[^<]*</label>.*?</div>', '', s, count=1, flags=re.I|re.S)
+
+          # Remove standalone customer-name input blocks when the label text differs slightly.
+          s = re.sub(r'<div[^>]*>\s*<label[^>]*>[^<]*Customer[^<]*Name[^<]*</label>.*?</div>', '', s, count=1, flags=re.I|re.S)
+
+          if s == original:
+              raise SystemExit('No matching name fields found; nothing committed.')
+
+          p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add admin.html
+          git diff --cached --quiet || git commit -m "Remove admin item and customer name fields"
+          git push
