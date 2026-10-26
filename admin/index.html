@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="si">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SIRILOOK | Admin Panel</title>
+<style>
+:root{--wine:#7b284f;--pink:#f8eaf0;--cream:#fffaf8;--ink:#261b21}*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font-family:Arial,"Noto Sans Sinhala",sans-serif}.wrap{max-width:850px;margin:auto;padding:20px}.brand{background:var(--wine);color:white;padding:22px;border-radius:16px;margin-bottom:18px}h1{margin:0 0 8px}h2{color:var(--wine)}.card{background:white;border:1px solid #eadde3;border-radius:14px;padding:18px;margin:14px 0}label{display:block;font-weight:bold;margin:12px 0 5px}input,textarea,select,button{font:inherit;width:100%;padding:12px;border:1px solid #d8c7d0;border-radius:9px}button{background:var(--wine);color:white;border:0;font-weight:bold;margin-top:14px;cursor:pointer}.muted{color:#71636a;font-size:14px;line-height:1.6}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.item{border:1px solid #eadde3;border-radius:12px;padding:12px;margin:10px 0;display:flex;gap:12px}.item img{width:85px;height:95px;object-fit:cover;border-radius:8px}.item button{margin-top:5px;background:#555}.hide{display:none}@media(max-width:560px){.grid{grid-template-columns:1fr}.item{flex-wrap:wrap}}
+</style></head>
+<body><main class="wrap">
+<header class="brand"><h1>SIRILOOK Admin Panel</h1><div>ඇඳුම් කළමනාකරණය</div></header>
+<section class="card" id="login"><h2>Admin Login</h2><p class="muted">මෙය මූලික පරීක්ෂණ පැනලයකි. මෙහි browser එකේ පමණක් දත්ත සුරැකේ; සැබෑ ආරක්ෂිත login සහ online database එක තවම සකස් කර නැත.</p><label>Admin password</label><input id="pw" type="password" placeholder="Password"><button onclick="loginNow()">Login</button><p class="muted" id="msg"></p></section>
+<section class="card hide" id="panel"><h2>අලුත් ඇඳුමක් එකතු කරන්න</h2>
+<label>ඇඳුමේ නම *</label><input id="name" placeholder="උදා: Ladies Dress">
+<div class="grid"><div><label>මිල (රු.) *</label><input id="price" type="number" min="0" placeholder="4500"></div><div><label>Category</label><select id="cat"><option>කාන්තා ඇඳුම්</option><option>පිරිමි ඇඳුම්</option><option>ළමා ඇඳුම්</option><option>වෙනත්</option></select></div></div>
+<label>Photo URL</label><input id="photo" type="url" placeholder="https://...">
+<label>Description</label><textarea id="desc" rows="3" placeholder="ඇඳුමේ විස්තර"></textarea>
+<label>Customer name (Adminට පමණක්)</label><input id="customer" placeholder="අවශ්‍ය නම් පමණක්">
+<button onclick="addProduct()">ඇඳුම සුරකින්න</button><p class="muted" id="saveMsg"></p><h2>සුරැකි ඇඳුම්</h2><div id="products"></div><button onclick="logoutNow()">Logout</button></section>
+</main><script>
+const KEY='sirilook_admin_products_v1';
+function loginNow(){if(document.getElementById('pw').value==='SIRILOOK-CHANGE-ME'){document.getElementById('login').classList.add('hide');document.getElementById('panel').classList.remove('hide');render()}else document.getElementById('msg').textContent='Password එක වැරදියි. Demo password: SIRILOOK-CHANGE-ME';}
+function getItems(){try{return JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){return []}}
+function addProduct(){const name=document.getElementById('name').value.trim(),price=document.getElementById('price').value;if(!name||!price){document.getElementById('saveMsg').textContent='නම සහ මිල අනිවාර්යයි.';return}const item={id:Date.now(),name,price,cat:document.getElementById('cat').value,photo:document.getElementById('photo').value.trim(),desc:document.getElementById('desc').value.trim(),customer:document.getElementById('customer').value.trim()};const a=getItems();a.unshift(item);localStorage.setItem(KEY,JSON.stringify(a));['name','price','photo','desc','customer'].forEach(id=>document.getElementById(id).value='');document.getElementById('saveMsg').textContent='මෙම browser එකේ සුරැකුණා.';render()}
+function render(){const el=document.getElementById('products'),a=getItems();el.innerHTML='';if(!a.length){el.textContent='තවම ඇඳුම් එකතු කරලා නැහැ.';return}a.forEach(p=>{const d=document.createElement('div');d.className='item';const img=document.createElement('img');img.src=p.photo||'https://placehold.co/100x120/f8eaf0/7b284f?text=SIRILOOK';img.alt=p.name;const info=document.createElement('div');const title=document.createElement('strong');title.textContent=p.name+' — Rs. '+p.price;const desc=document.createElement('p');desc.textContent=p.cat+' | '+p.desc+(p.customer?' | Customer: '+p.customer:'');const del=document.createElement('button');del.textContent='Delete';del.onclick=()=>{localStorage.setItem(KEY,JSON.stringify(getItems().filter(x=>x.id!==p.id)));render()};info.append(title,desc,del);d.append(img,info);el.append(d)})}
+function logoutNow(){document.getElementById('panel').classList.add('hide');document.getElementById('login').classList.remove('hide');document.getElementById('pw').value=''}
+</script></body></html>
