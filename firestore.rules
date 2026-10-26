@@ -38,7 +38,7 @@ service cloud.firestore {
       allow list: if isAdmin();
       allow create: if
         request.resource.data.keys().hasOnly([
-          'code', 'items', 'total', 'status', 'createdAt'
+          'code', 'items', 'subtotal', 'deliveryFee', 'total', 'status', 'createdAt'
         ])
         && request.resource.data.keys().hasAll([
           'code', 'items', 'total', 'status', 'createdAt'
