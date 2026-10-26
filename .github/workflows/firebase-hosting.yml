@@ -1,4 +1,4 @@
-# Redeploy SIRILOOK Hosting and Firestore rules
+# Deploy SIRILOOK Hosting first, then Firestore rules
 name: Deploy SIRILOOK to Firebase Hosting
 
 on:
@@ -14,6 +14,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Deploy to Firebase Hosting
+        uses: FirebaseExtended/action-hosting-deploy@v0.10.0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SIRILOOK_4683C }}
+          projectId: sirilook-4683c
+          channelId: live
+
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
 
@@ -24,11 +32,3 @@ jobs:
           printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/firebase-service-account.json"
           export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/firebase-service-account.json"
           firebase deploy --only firestore:rules --project sirilook-4683c --non-interactive
-
-      - name: Deploy to Firebase Hosting
-        uses: FirebaseExtended/action-hosting-deploy@v0.10.0
-        with:
-          repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SIRILOOK_4683C }}
-          projectId: sirilook-4683c
-          channelId: live
