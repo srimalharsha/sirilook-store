@@ -31,4 +31,6 @@ jobs:
         run: |
           printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/firebase-service-account.json"
           export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/firebase-service-account.json"
+          # Print only the service-account email so IAM permissions can be fixed.
+          node -e "const c=require(process.env.GOOGLE_APPLICATION_CREDENTIALS); console.log('Firebase deploy service account:', c.client_email)"
           firebase deploy --only firestore:rules --project sirilook-4683c --non-interactive
