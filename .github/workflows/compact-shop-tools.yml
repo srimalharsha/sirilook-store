@@ -1,0 +1,51 @@
+name: Compact Shop Filters
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  compact:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Make search and filter controls smaller
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          marker = '/* SIRILOOK-COMPACT-FILTERS */'
+          if marker in s:
+              print('Compact filter CSS already applied.')
+              raise SystemExit(0)
+          css = '''<style>/* SIRILOOK-COMPACT-FILTERS */
+          .shop-tools{gap:7px!important;padding:9px!important;margin-bottom:14px!important}
+          .shop-tools input[type=search],.shop-tools select{padding:8px 9px!important;font-size:12px!important;border-radius:7px!important}
+          .discount-filter{gap:5px!important;font-size:11px!important}
+          .discount-filter input{width:14px!important;height:14px!important}
+          #clearFilters{padding:8px 9px!important;font-size:11px!important;border-radius:7px!important}
+          @media(max-width:700px){.shop-tools{gap:6px!important;padding:7px!important}.shop-tools input[type=search]{padding:7px 8px!important;font-size:11px!important}.shop-tools select{padding:7px 6px!important;font-size:11px!important}.discount-filter{font-size:10px!important;gap:4px!important}.discount-filter input{width:13px!important;height:13px!important}#clearFilters{padding:7px 6px!important;font-size:10px!important}}
+          @media(max-width:420px){.shop-tools{gap:5px!important;padding:6px!important}.shop-tools input[type=search],.shop-tools select{padding:6px 5px!important;font-size:10px!important}.discount-filter{font-size:9px!important}.discount-filter input{width:12px!important;height:12px!important}#clearFilters{padding:6px 5px!important;font-size:9px!important}}
+          </style>'''
+          s = s.replace('</head>', css + '</head>', 1)
+          p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Commit compact filter CSS
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Make shop search and filters more compact"
+            git push
+          fi
