@@ -1,0 +1,48 @@
+name: Fix SIRILOOK free delivery display
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/fix-free-delivery-display.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fix main page product price
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          old = 'const displayPrice=basePrice;'
+          new = 'const displayPrice=basePrice+(p.freeDelivery===true?styleDeliveryFee(p,1):0);'
+          if old not in s:
+              raise SystemExit('Target price expression not found; no changes made.')
+          s = s.replace(old, new, 1)
+          p.write_text(s, encoding='utf-8')
+          print('Main page free-delivery price fixed.')
+          PY
+
+      - name: Commit fix
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'Fix main page free delivery price display'
+          git push
+
+      - name: Remove temporary workflow
+        if: success()
+        run: |
+          git rm .github/workflows/fix-free-delivery-display.yml
+          git commit -m 'Remove temporary price fix workflow'
+          git push
