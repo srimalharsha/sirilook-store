@@ -1,0 +1,70 @@
+name: Fix SIRILOOK free delivery pricing
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Patch pricing logic
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+
+          def patch(path, replacements):
+              p = Path(path)
+              s = p.read_text(encoding='utf-8')
+              original = s
+              for old, new, label in replacements:
+                  n = s.count(old)
+                  if n != 1:
+                      raise SystemExit(f'{path}: {label}: expected 1 match, found {n}')
+                  s = s.replace(old, new)
+              if s != original:
+                  p.write_text(s, encoding='utf-8')
+                  print('patched', path)
+              else:
+                  print('unchanged', path)
+
+          # Free Delivery is a promotion: the configured delivery cost is built
+          # into the displayed/product price, but is NOT charged a second time.
+          patch('admin.html', [
+              ('$("productDeliveryFields").hidden=p.freeDelivery===true;', '$("productDeliveryFields").hidden=false;', 'keep delivery settings visible when editing'),
+              ('deliveryFeeEnabled:!$("freeDelivery").checked&&$("productBaseDeliveryFee").value.trim()!=="",deliveryFee:!$("freeDelivery").checked&&$("productBaseDeliveryFee").value.trim()!==""?Math.max(0,Number($("productBaseDeliveryFee").value)||0):null,deliveryRanges:!$("freeDelivery").checked?cleanProductDeliveryRanges():[],', 'deliveryFeeEnabled:$("productBaseDeliveryFee").value.trim()!=="",deliveryFee:$("productBaseDeliveryFee").value.trim()!==""?Math.max(0,Number($("productBaseDeliveryFee").value)||0):null,deliveryRanges:cleanProductDeliveryRanges(),', 'save delivery settings even for free delivery'),
+              ('$("freeDelivery").addEventListener("change",()=>{$("productDeliveryFields").hidden=$("freeDelivery").checked;});', '$("freeDelivery").addEventListener("change",()=>{$("productDeliveryFields").hidden=false;});', 'do not hide delivery settings'),
+          ])
+
+          patch('index.html', [
+              ('function styleDeliveryFee(p,quantity=1){if(p&&p.deliveryFeeEnabled!==true)return 0;', 'function styleDeliveryFee(p,quantity=1,includeFree=false){if(p&&p.freeDelivery===true&&!includeFree)return 0;if(p&&p.deliveryFeeEnabled!==true)return 0;', 'free delivery fee handling'),
+              ('const displayPrice=basePrice+(p.freeDelivery===true?styleDeliveryFee(p,1):0);', 'const displayPrice=basePrice+(p.freeDelivery===true?styleDeliveryFee(p,1,true):0);', 'main page full price'),
+          ])
+
+          patch('product.html', [
+              ('function styleDeliveryFee(product,quantity=1){if(product&&product.deliveryFeeEnabled!==true)return 0;', 'function styleDeliveryFee(product,quantity=1,includeFree=false){if(product&&product.freeDelivery===true&&!includeFree)return 0;if(product&&product.deliveryFeeEnabled!==true)return 0;', 'product fee handling'),
+              ('const fee=p.freeDelivery===true?0:(p.deliveryFeeEnabled===true?styleDeliveryFee(p,1):0);', 'const fee=p.freeDelivery===true?styleDeliveryFee(p,1,true):(p.deliveryFeeEnabled===true?styleDeliveryFee(p,1):0);', 'product detail full price'),
+              ('const price=di.active?di.price:Number(p.price||0);items.push({id,name:', 'const price=di.active?di.price:Number(p.price||0);const cartPrice=p.freeDelivery===true?price+styleDeliveryFee(p,1,true):price;items.push({id,name:', 'cart full price'),
+              ('price,color:selectedColor?.code||"",size:selectedSize||"",qty:1,freeDelivery:', 'price:cartPrice,color:selectedColor?.code||"",size:selectedSize||"",qty:1,freeDelivery:', 'store full price in cart'),
+              ('const deliveryFee=p.freeDelivery===true?0:(p.deliveryFeeEnabled===true?styleDeliveryFee(p,1):0),finalPrice=price+deliveryFee,item=', 'const deliveryFee=p.freeDelivery===true?0:(p.deliveryFeeEnabled===true?styleDeliveryFee(p,1):0),finalPrice=price+deliveryFee,item=', 'order delivery fee'),
+          ])
+          PY
+
+      - name: Commit fix
+        run: |
+          if git diff --quiet; then
+            echo "No changes needed."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add admin.html index.html product.html
+          git commit -m "Fix free delivery included pricing"
+          git push
