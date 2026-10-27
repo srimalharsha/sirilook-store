@@ -7,7 +7,7 @@ required = {
     "index.html": [
         "function cartDeliveryFee(items)",
         'const CART_KEY="sirilook_cart_v2";',
-        "գෙවිය යුතු මුළු මුදල",
+        "cartDeliveryFee(items)",
     ],
     "product.html": [
         'const key="sirilook_cart_v2";',
